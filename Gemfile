@@ -9,7 +9,9 @@ end
 # Core
 gem 'rails', '~> 5.1.3'
 gem 'puma', '~> 3.7'
-gem 'sqlite3'
+gem 'pg'                        # Database
+gem 'jwt'                       # Token Auth
+gem 'newrelic_rpm'
 # Server
 gem 'redis', '~> 3.0'
 gem 'bcrypt', '~> 3.1.7'
@@ -26,6 +28,14 @@ gem 'turbolinks', '~> 5'
 
 ###############################################################################
 # General
+gem 'state_machines'
+gem 'state_machines-activerecord'
+gem 'elasticsearch-model'
+gem 'elasticsearch-rails'
+gem 'graphql'
+gem 'smarter_csv'
+gem 'sidekiq'
+
 
 ###############################################################################
 # Attachments
