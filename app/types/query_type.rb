@@ -1,11 +1,31 @@
 QueryType = GraphQL::ObjectType.define do
   name "Query"
   description "The query root for this schema"
-  field :member do
-    type MemberType
+  field :members do
+    type types[MemberType]
     argument :status, !types.String
     resolve -> (obj, args, ctx) {
+      if args[:status].present?
       Member.all.where(status: args[:status])
+    else
+      Member.all
+    end
+    }
+  end
+
+  field :member_search do
+    type types[MemberType]
+    argument :query, !types.String
+    resolve -> (obj, args, ctx) {
+      Member.search(args[:query])
+    }
+  end
+
+  field :member do
+    type MemberType
+    argument :id, !types.ID
+    resolve -> (obj, args, ctx) {
+      Member.find(args[:id])
     }
   end
 

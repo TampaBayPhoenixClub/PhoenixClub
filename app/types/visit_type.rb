@@ -3,12 +3,6 @@ VisitType = GraphQL::ObjectType.define do
   description "A Visit"
   field :id, types.ID
   field :code, types.String
-  field :create_at, types.DateTime
+  field :create_at, types.String
 
-  field :sponsor do
-    type types[MemberType]
-    resolve -> (visit, args, ctx) {
-      visit.sponsor
-    }
-  end
 end

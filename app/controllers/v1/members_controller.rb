@@ -1,45 +1,36 @@
 class V1::MembersController < ApplicationController
-  def show
-    if @members.present?
-      render :show, formats: [:json], status: :ok, location: nil
-    else
-      render json: @members.errors, status: :not_found
-    end
-  end
+  skip_before_action :verify_authenticity_token
+  before_action :set_member
 
-  def members
+  def query
     result = Schema.execute params[:query]
     render json: result
   end
 
-  def member_search
-    query = params['query']
-    Member.search(query)
-  end
-
   def update
-    if @member.update_attributes(item_params)
-      render :show, formats: [:json], status: :ok, location: nil
+    if @member.update_attributes(member_params)
+      render json: @member, status: :ok, location: nil
     else
       render json: @member.errors, status: :unprocessable_entity
     end
   end
 
   def create
-    @member = Member.new(item_params)
+    @member = Member.new(member_params)
 
     if @member.save
-      render :item, formats: [:json], status: :created, location: nil
+      render json: @member, status: :created, location: nil
     else
       render json: @member.errors, status: :unprocessable_entity
     end
   end
 
   def create_visit
-    if @member.visits << Visit.new(visit_params)
-      render :visit, formats: [:json], status: :created, location: nil
+    @visit = @member.visits.build(visit_params)
+    if @visit.save
+      render json: @visit, status: :created, location: nil
     else
-      render json: @member.errors, status: :unprocessable_entity
+      render json: @visit.errors, status: :unprocessable_entity
     end
   end
 
@@ -54,6 +45,6 @@ class V1::MembersController < ApplicationController
   end
 
   def visit_params
-    params.require(:visit).permit(:id, :code, :sponsor_id)
+    params.require(:visit).permit(:id, :code)
   end
 end

@@ -6,9 +6,10 @@ MemberType = GraphQL::ObjectType.define do
   field :last_name, types.String
   field :scene_name, types.String
   field :status, types.String
-  field :join_date, types.DateTime
-  field :renewal_date, types.DateTime
-  field :birthday, type.DateTime
+  field :membership_id, types.Int
+  field :join_date, types.String
+  field :renewal_date, types.String
+  field :birthday, type.String
 
   field :visit do
     type types[VisitType]

@@ -1,6 +1,22 @@
 class Member < ApplicationRecord
+  include Elasticsearch::Model::Callbacks
+  include Elasticsearch::Model
+
   has_many :visits, dependent: :destroy
   accepts_nested_attributes_for :visits, allow_destroy: true
+
+
+  state_machine :status, initial: :guest do
+    state :active
+    state :dna
+    state :historical
+    state :compted
+    state :staff
+    state :guest
+
+
+  end
+
 
   def self.import_csv
     SmarterCSV.process(file.path, {
@@ -21,7 +37,6 @@ class Member < ApplicationRecord
     end
   end
 
-  validates :user_id, presence: true
   settings analysis: {
          filter: {
            edge_ngram_filter: {
@@ -44,10 +59,10 @@ class Member < ApplicationRecord
          }
        } do
    mapping do
-       indexes :first_name, analyzer: "edge_ngram_analyzer", search_analyzer: 'search_analyzer'
-       indexes :last_name, analyzer:   "edge_ngram_analyzer", search_analyzer: 'search_analyzer'
-       indexes :scene_name, analyzer: "edge_ngram_analyzer", search_analyzer: 'search_analyzer'
-       indexes :membership_id, analyzer:   "edge_ngram_analyzer", search_analyzer: 'search_analyzer'
+       indexes :first_name, type: 'text', analyzer: "edge_ngram_analyzer", search_analyzer: 'search_analyzer'
+       indexes :last_name, type: 'text', analyzer:   "edge_ngram_analyzer", search_analyzer: 'search_analyzer'
+       indexes :scene_name, type: 'text', analyzer: "edge_ngram_analyzer", search_analyzer: 'search_analyzer'
+       indexes :membership_id, type: 'integer'
    end
  end
 
@@ -60,10 +75,9 @@ class Member < ApplicationRecord
      size: 10000,
      query: {
            multi_match: {
-             query: "#{query}",
+             query: query,
              fields: ['first_name', 'last_name', 'scene_name', 'membership_id'],
-             operator:   "and",
-             type:       "cross_fields",
+             lenient: true
            }
      }
    }
@@ -72,3 +86,12 @@ class Member < ApplicationRecord
  end
 
 end
+
+# # Delete the previous articles index in Elasticsearch
+Member.__elasticsearch__.create_index! force: true
+#
+# # Create the new index with the new mapping
+Member.__elasticsearch__.refresh_index!
+
+# Index all article records from the DB to Elasticsearch
+Member.import
